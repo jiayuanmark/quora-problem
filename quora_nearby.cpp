@@ -30,9 +30,9 @@ public:
 	Entry (double dd, int ii) : dist(dd), id(ii) {}
 
 	bool operator<(const Entry &e) const {
-        if (dist != e.dist) return dist < e.dist;
-        return id > e.id;
-    }
+		if (dist != e.dist) return dist < e.dist;
+		return id > e.id;
+	}
 };
 
 
@@ -164,8 +164,8 @@ class KDNode
 private:
 	int splitByDim(const int& l, const int& u, const int& dim)
 	{
-		if (dim) sort(allTopics+l, allTopics+u+1, sortByX);
-		else sort(allTopics+l, allTopics+u+1, sortByY);
+		if (dim) sort(allTopics+l, allTopics+u+1, sortByY);
+		else sort(allTopics+l, allTopics+u+1, sortByX);
 		return l + (u-l) / 2;
 	}
 
@@ -181,7 +181,7 @@ public:
 	{
 		if (low == high)
 			return;
-		
+
 		int mid = splitByDim(low, high, depth%2);
 		
 		if (low == mid)
