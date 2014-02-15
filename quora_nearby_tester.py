@@ -22,7 +22,8 @@ def generate_data (inputfile, T, Q, N):
 	for i in range(Q):
 		relatetopic = range(T)
 		random.shuffle(relatetopic)
-		f.write(str(i) + ' 10 ' + ' '.join([ str(u) for u in relatetopic[:10] ]) + '\n');
+		n = random.randint(0, 10)
+		f.write(' '.join([str(i), str(n)] + [str(u) for u in relatetopic[:n]]) + '\n');
 
 	# Query
 	for i in range(N):
@@ -75,6 +76,8 @@ def nearby_question (query):
 
 	val = []
 	for question in quest_lst:
+		if len(question) == 1:
+			continue
 		val.append((question[0], min([ dval[u] for u in question[1:] ])))
 	val = sorted(val, key=lambda x:(x[1], -x[0]))
 	return ' '.join([ str(u[0]) for u in val[:K] ])
@@ -106,7 +109,7 @@ def compare_result (sol, res):
 
 if __name__ == "__main__":
 	tmpFileName = "tmp.data"
-	generate_data (tmpFileName, 10000, 1000, 100)
+	generate_data (tmpFileName, 10000, 1000, 1000)
 	
 	start = time.time()
 	read_data (tmpFileName)
