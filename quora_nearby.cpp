@@ -192,6 +192,12 @@ public:
 		this->left = new KDNode(depth+1, low, mid);
 		this->right = new KDNode(depth+1, mid+1, high);
 	}
+
+	~KDNode ()
+	{
+		delete left;
+		delete right;
+	}
 };
 
 
@@ -318,6 +324,8 @@ int main ()
 			Q.printQuestion ();
 		}
 	}
+
+	delete root;
 	
 	return 0;
 }
