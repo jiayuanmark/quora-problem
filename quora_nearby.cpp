@@ -14,7 +14,8 @@ class Topic
 public:
 	int tid;
 	double data[2];
-	Topic (int id, double xx, double yy) : tid(id) {
+
+	Topic (int tt, double xx, double yy) : tid(tt) {
 		data[0] = xx;
 		data[1] = yy;
 	}
@@ -27,10 +28,11 @@ class Entry
 public:
 	double dist;
 	int id;
+	
 	Entry (double dd, int ii) : dist(dd), id(ii) {}
 
 	bool operator<(const Entry &e) const {
-		if (dist != e.dist) return dist < e.dist;
+		if (abs(dist - e.dist) >= 0.001) return dist < e.dist;
 		return id > e.id;
 	}
 };
@@ -39,43 +41,46 @@ public:
 class TopicQueue
 {
 public:
-	priority_queue<Entry> prq;
+	priority_queue<Entry> q;
 	int K;
 
 	TopicQueue (int kk) : K (kk) {}
 
 	void updateTopic (const Entry& e) {
-		if (prq.size() < K) {
-			prq.push(e);
-		} else if (e < prq.top()) {
-			prq.pop();
-			prq.push(e);
+		if (q.size() < K) {
+			q.push(e);
+		} else if (e < q.top()) {
+			q.pop();
+			q.push(e);
 		}
 	}
 
 	double radius () {
-		assert (!prq.empty());
-		return prq.top().dist;
+		assert (!q.empty());
+		return q.top().dist;
 	}
-
-
-	void printTopic () {
-		vector<Entry> vec;
-		while (!prq.empty()) {
-			vec.push_back(prq.top());
-			prq.pop();
-		}
-		for (int i = vec.size()-1; i >= 0; --i)
-		{	
-			if (i == 0) cout << vec[i].id << endl;
-			else cout << vec[i].id << " ";
-		}
-	}
-
 
 	int needed () {
-		return K - prq.size();
+		return K - q.size();
 	}
+
+	void printTopic () {
+		rprint ();
+		cout << endl;
+	}
+
+private:
+	void rprint () {
+		if (q.empty()) return;
+		int val = q.top().id;
+		q.pop();
+		if (q.size() >= 1) {
+			rprint ();
+			cout << " " << val;
+		}
+		else cout << val;
+	}
+
 };
 
 
@@ -130,7 +135,7 @@ public:
 		for (int i = 0; i < vec.size(); ++i) {
 			if (i == vec.size()-1)
 				cout << vec[i].id << endl;
-			else cout << vec[i].id << " ";
+			else  cout << vec[i].id << " ";
 		}
 	}
 
@@ -146,48 +151,44 @@ public:
 
 
 int T, Q, N;
-Topic allTopics[10050];
+Topic arr[10050];
 map<int, vector<int> > tqTable;
-
-
-bool sortByX (const Topic& t1, const Topic& t2) {
-	return t1.data[0] < t2.data[0];
-}
-
-bool sortByY (const Topic& t1, const Topic& t2) {
-	return t1.data[1] < t2.data[1];
-}
 
 
 class KDNode
 {
 private:
-	int splitByDim(const int& l, const int& u, const int& dim)
+	int partition(int left, int right, int dim)
 	{
-		if (dim) sort(allTopics+l, allTopics+u+1, sortByY);
-		else sort(allTopics+l, allTopics+u+1, sortByX);
-		return l + (u-l) / 2;
+		int l = left, r = right;
+		double vp = arr[l + rand() % (r - l + 1)].data[dim];
+		do {
+			while (arr[l].data[dim] < vp) l++;
+			while (arr[r].data[dim] > vp) r--;
+			if (l <= r) {
+				Topic tmp = arr[r];
+				arr[r] = arr[l];
+				arr[l] = tmp;
+				l++;
+				r--;
+			}
+		} while (l <= r);
+		return r;
 	}
 
 public:
 	int depth;
 	int low, high;
-
 	double splitPoint;
 	KDNode *left, *right;
 
-	KDNode (int dd, int ll, int hh): depth (dd), low(ll), high(hh), 
-		splitPoint(-1.0), left(NULL), right(NULL)
+	KDNode (int dd, int ll, int hh): depth (dd), low(ll), high(hh), splitPoint(-1.0), left(NULL), right(NULL)
 	{
-		if (depth > 10)
+		if (low >= high)
 			return;
 
-		int mid = splitByDim(low, high, depth%2);
-		
-		if (low == mid)
-			return;
-
-		this->splitPoint = allTopics[mid].data[depth%2];
+		int mid = partition(low, high, depth % 2);
+		this->splitPoint = arr[mid].data[depth % 2];
 		this->left = new KDNode(depth+1, low, mid);
 		this->right = new KDNode(depth+1, mid+1, high);
 	}
@@ -206,10 +207,10 @@ void KNN (KDNode *index, const double &x, const double &y, TopicQueue &Q)
 	if (!index) return;
 
 	/* Leaf node */
-	if (index->splitPoint == -1) {
+	if (index->splitPoint < 0) {
 		for (int tt = index->low; tt <= index->high; ++tt) {
-			double D = dist(x, y, allTopics[tt].data[0], allTopics[tt].data[1]);
-			Entry e (D, allTopics[tt].tid);
+			double D = dist(x, y, arr[tt].data[0], arr[tt].data[1]);
+			Entry e (D, arr[tt].tid);
 			Q.updateTopic (e);
 		}
 		return;
@@ -222,8 +223,8 @@ void KNN (KDNode *index, const double &x, const double &y, TopicQueue &Q)
 	/* Subtree */
 	if ( !p1 || (p1->high - p1->low + 1) < Q.needed() ) {
 		for (int tt = index->low; tt <= index->high; ++tt) {
-			double D = dist(x, y, allTopics[tt].data[0], allTopics[tt].data[1]);
-			Entry e (D, allTopics[tt].tid);
+			double D = dist(x, y, arr[tt].data[0], arr[tt].data[1]);
+			Entry e (D, arr[tt].tid);
 			Q.updateTopic (e);
 		}
 	}
@@ -242,10 +243,10 @@ void KNNQuestion (KDNode *index, const double &x, const double &y, QuestionQueue
 	if (!index) return;
 
 	/* Leaf node */
-	if (index->splitPoint == -1) {
+	if (index->splitPoint < 0) {
 		for (int tt = index->low; tt <= index->high; ++tt) {
-			double D = dist(x, y, allTopics[tt].data[0], allTopics[tt].data[1]);
-			vector<int> qid = tqTable[allTopics[tt].tid];
+			double D = dist(x, y, arr[tt].data[0], arr[tt].data[1]);
+			vector<int> qid = tqTable[arr[tt].tid];
 			for (int qq = 0; qq < qid.size(); ++qq)
 			{
 				Entry ques (D, qid[qq]);
@@ -273,25 +274,25 @@ int main ()
 {
 	cin >> T >> Q >> N;
 	
-	// Read topics
-	int tid;
+	int tid, qid, qn;
 	double xx, yy;
+
+	// Read topics
 	for (int t = 0; t < T; ++t)
 	{
 		cin >> tid >> xx >> yy;
 		Topic tpc (tid, xx, yy);
-		allTopics[t] = tpc; 
+		arr[t] = tpc;
 	}
 
 	// Build index
 	KDNode *root = new KDNode(0, 0, T-1);
 
 	// Read questions
-	int qid, Qn;
 	for (int q = 0; q < Q; ++q)
 	{	
-		cin >> qid >> Qn;
-		for (int t = 0; t < Qn; ++t)
+		cin >> qid >> qn;
+		for (int t = 0; t < qn; ++t)
 		{
 			cin >> tid;
 			tqTable[tid].push_back(qid);
