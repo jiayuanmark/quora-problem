@@ -179,7 +179,7 @@ public:
 	KDNode (int dd, int ll, int hh): depth (dd), low(ll), high(hh), 
 		splitPoint(-1.0), left(NULL), right(NULL)
 	{
-		if (low >= high)
+		if (depth > 10)
 			return;
 
 		int mid = splitByDim(low, high, depth%2);

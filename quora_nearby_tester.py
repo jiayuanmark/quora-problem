@@ -109,7 +109,7 @@ def compare_result (sol, res):
 
 if __name__ == "__main__":
 	tmpFileName = "tmp.data"
-	generate_data (tmpFileName, 10000, 1000, 1000)
+	generate_data (tmpFileName, 10000, 1000, 10000)
 	
 	start = time.time()
 	read_data (tmpFileName)
