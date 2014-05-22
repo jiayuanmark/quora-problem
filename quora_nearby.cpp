@@ -31,6 +31,8 @@ public:
 	
 	Entry (double dd, int ii) : dist(dd), id(ii) {}
 
+	Entry () {}
+
 	bool operator<(const Entry &e) const {
 		if (abs(dist - e.dist) >= 0.001) return dist < e.dist;
 		return id > e.id;
@@ -40,10 +42,12 @@ public:
 
 class TopicQueue
 {
-public:
+
+private:
 	priority_queue<Entry> q;
 	int K;
 
+public:
 	TopicQueue (int kk) : K (kk) {}
 
 	void updateTopic (const Entry& e) {
@@ -65,20 +69,15 @@ public:
 	}
 
 	void printTopic () {
-		rprint ();
-		cout << endl;
-	}
-
-private:
-	void rprint () {
-		if (q.empty()) return;
-		int val = q.top().id;
-		q.pop();
-		if (q.size() >= 1) {
-			rprint ();
-			cout << " " << val;
+		vector<Entry> vec;
+		while (!q.empty()) {
+			vec.push_back (q.top());
+			q.pop ();
 		}
-		else cout << val;
+		for (int i = vec.size()-1; i >= 0; --i) {
+			if (i == 0) cout << vec[i].id << endl;
+			else  cout << vec[i].id << " ";
+		}
 	}
 
 };
@@ -88,6 +87,10 @@ private:
 class QuestionQueue {
 
 private:
+	vector<Entry> vec;
+	set<int> visited;
+	int K;
+
 	void decreaseKey (const Entry& e) {
 		for (int i = 0; i < vec.size(); ++i) {
 			if (vec[i].id != e.id) continue;
@@ -100,10 +103,6 @@ private:
 	}
 
 public:
-	vector<Entry> vec;
-	set<int> visited;
-	int K;
-
 	QuestionQueue (int kk) : K(kk) {}
 
 	void updateQuestion (const Entry& e) {
