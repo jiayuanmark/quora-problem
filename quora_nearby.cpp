@@ -9,6 +9,7 @@
 
 using namespace std;
 
+
 class Topic
 {
 public:
@@ -272,7 +273,6 @@ void KNNQuestion (KDNode *index, const double &x, const double &y, QuestionQueue
 		KNNQuestion (p2, x, y, Q);
 	}
 }
-
 
 
 int main ()
