@@ -278,24 +278,18 @@ void KNNQuestion (KDNode *index, const double &x, const double &y, QuestionQueue
 int main ()
 {
 	cin >> T >> Q >> N;
-	
-	int tid, qid, qn;
-	double xx, yy;
 
 	// Read topics
-	for (int t = 0; t < T; ++t)
-	{
-		cin >> tid >> xx >> yy;
-		Topic tpc (tid, xx, yy);
-		arr[t] = tpc;
+	for (int i = 0; i < T; ++i) {
+		cin >> arr[i].tid >> arr[i].data[0] >> arr[i].data[1];
 	}
 
 	// Build index
 	KDNode *root = new KDNode(0, 0, T-1);
 
+	int tid, qid, qn;
 	// Read questions
-	for (int q = 0; q < Q; ++q)
-	{	
+	for (int q = 0; q < Q; ++q) {	
 		cin >> qid >> qn;
 		for (int t = 0; t < qn; ++t)
 		{
